@@ -1,0 +1,144 @@
+/* ==========================================================================
+   Base Styles & Typography
+   ========================================================================== */
+body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background-color: #f7f9fc;
+    color: #2b3445;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+/* ==========================================================================
+   Navigation & Headers
+   ========================================================================== */
+.bg-primary-gradient {
+    background: linear-gradient(135deg, #1A2980 0%, #26D0CE 100%);
+}
+
+.navbar-brand {
+    font-size: 1.4rem;
+    letter-spacing: -0.5px;
+}
+
+/* ==========================================================================
+   Layout & Cards
+   ========================================================================== */
+.content-container {
+    flex: 1 0 auto;
+}
+
+.card {
+    transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05) !important;
+}
+
+.card:hover {
+    box-shadow: 0 15px 50px rgba(26, 41, 128, 0.1) !important;
+}
+
+/* ==========================================================================
+   Form Elements
+   ========================================================================== */
+.section-title {
+    color: #1A2980 !important;
+    font-weight: 700;
+    font-size: 1.15rem;
+    border-bottom: 2px solid #edf2f9 !important;
+}
+
+.form-control, .form-select {
+    border-radius: 8px;
+    border: 1px solid #d8e2ef;
+    padding: 0.65rem 1rem;
+    font-size: 0.95rem;
+    color: #2b3445;
+    background-color: #fff;
+    transition: border-color 0.2s, box-shadow 0.2s, background-color 0.2s;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #26D0CE;
+    box-shadow: 0 0 0 0.25rem rgba(38, 208, 206, 0.15);
+    background-color: #fff;
+}
+
+.form-label {
+    margin-bottom: 0.4rem;
+    color: #5e6e82;
+    font-size: 0.9rem;
+    letter-spacing: 0.2px;
+}
+
+.input-group-text {
+    border-radius: 0 8px 8px 0;
+    font-size: 0.85rem;
+    font-weight: 500;
+    border: 1px solid #d8e2ef;
+    border-left: 0;
+}
+
+.form-control.border-end-0, 
+.input-group > .form-control {
+    border-radius: 8px 0 0 8px;
+}
+
+/* ==========================================================================
+   Buttons & Links
+   ========================================================================== */
+.predict-btn {
+    background: linear-gradient(135deg, #1A2980 0%, #26D0CE 100%);
+    border: none;
+    padding: 14px 20px;
+    font-size: 1.15rem;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+}
+
+.predict-btn:hover {
+    background: linear-gradient(135deg, #121d59 0%, #1ea3a1 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(38, 208, 206, 0.4) !important;
+}
+
+.predict-btn:active {
+    transform: translateY(0);
+}
+
+.reset-link {
+    transition: color 0.2s ease;
+    font-size: 0.9rem;
+}
+
+.reset-link:hover {
+    color: #1A2980 !important;
+}
+
+/* ==========================================================================
+   Alerts / Feedback
+   ========================================================================== */
+.alert {
+    border-radius: 12px;
+    border: none;
+}
+
+.alert-success {
+    background-color: #d1f2eb;
+    color: #0b5345;
+    border-left: 5px solid #1abc9c;
+}
+
+.alert-danger {
+    background-color: #fadbd8;
+    color: #7b241c;
+    border-left: 5px solid #e74c3c;
+}
+
+/* Responsive tweaks */
+@media (max-width: 576px) {
+    .card-body {
+        padding-left: 1.5rem !important;
+        padding-right: 1.5rem !important;
+    }
+}

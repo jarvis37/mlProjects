@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CardioRisk ML | Heart Disease Prediction</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="bg-light">
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary-gradient shadow-sm">
+        <div class="container">
+            <span class="navbar-brand fw-bold">
+                <i class="bi bi-heart-pulse-fill text-danger me-2"></i> CardioRisk ML
+            </span>
+            <span class="navbar-text text-white-50 d-none d-sm-block">
+                Intelligent Cardiovascular Risk Assessment
+            </span>
+        </div>
+    </nav>
+
+    <div class="container my-5 content-container">
+        <div class="row justify-content-center">
+            <div class="col-xl-9 col-lg-10">
+                <div class="card shadow-lg border-0 rounded-4 overflow-hidden">
+                    <div class="card-header bg-white border-0 pt-5 pb-2 px-md-5 px-4">
+                        <h2 class="fw-bold text-center text-dark">Patient Assessment Form</h2>
+                        <p class="text-center text-muted mb-0">Enter the patient's medical metrics below to predict their 10-year risk of developing heart disease using a trained Random Forest model.</p>
+                    </div>
+                    
+                    <div class="card-body px-md-5 px-4 py-4">
+                        
+                        <!-- Prediction Results -->
+                        {% if result %}
+                            <div class="alert alert-{{ alert_type }} alert-dismissible fade show shadow-sm text-center py-3 px-4 mb-4 result-alert" role="alert">
+                                <h4 class="alert-heading fw-bold mb-1">Analysis Complete</h4>
+                                <hr>
+                                <p class="mb-0 fs-5">{{ result }}</p>
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        {% endif %}
+
+                        <!-- Error Banner -->
+                        {% if error %}
+                            <div class="alert alert-danger shadow-sm py-3 mb-4" role="alert">
+                                <strong><i class="bi bi-exclamation-triangle-fill me-2"></i>Error:</strong> {{ error }}
+                            </div>
+                        {% endif %}
+
+                        <form action="/" method="POST" id="predictionForm">
+                            <h5 class="section-title text-primary mb-3 pb-2 mt-2">
+                                <i class="bi bi-person-badge me-2"></i>Demographics & Habits
+                            </h5>
+                            <div class="row g-4 mb-4">
+                                <div class="col-md-3 col-sm-6">
+                                    <label class="form-label fw-medium">Gender</label>
+                                    <select class="form-select" name="male" required>
+                                        <option value="Male" {% if form_data.get('male') == 'Male' %}selected{% endif %}>Male</option>
+                                        <option value="Female" {% if form_data.get('male') == 'Female' %}selected{% endif %}>Female</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3 col-sm-6">
+                                    <label class="form-label fw-medium">Age</label>
+                                    <input type="number" class="form-control" name="age" min="18" max="120" value="{{ form_data.get('age', '') }}" required placeholder="e.g. 45">
+                                </div>
+                                <div class="col-md-3 col-sm-6">
+                                    <label class="form-label fw-medium">Smoker?</label>
+                                    <select class="form-select" id="smokerSelect" name="currentSmoker" required onchange="toggleCigarettes()">
+                                        <option value="No" {% if form_data.get('currentSmoker') == 'No' %}selected{% endif %}>No</option>
+                                        <option value="Yes" {% if form_data.get('currentSmoker') == 'Yes' %}selected{% endif %}>Yes</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3 col-sm-6">
+                                    <label class="form-label fw-medium">Cigarettes / Day</label>
+                                    <input type="number" class="form-control" name="cigsPerDay" id="cigsInput" min="0" value="{{ form_data.get('cigsPerDay', '0') }}" required>
+                                </div>
+                            </div>
+
+                            <h5 class="section-title text-primary mb-3 pb-2 mt-4">
+                                <i class="bi bi-journal-medical me-2"></i>Medical History
+                            </h5>
+                            <div class="row g-4 mb-4">
+                                <div class="col-md-3 col-sm-6">
+                                    <label class="form-label fw-medium">BP Medication</label>
+                                    <select class="form-select" name="BPMeds" required>
+                                        <option value="No" {% if form_data.get('BPMeds') == 'No' %}selected{% endif %}>No</option>
+                                        <option value="Yes" {% if form_data.get('BPMeds') == 'Yes' %}selected{% endif %}>Yes</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3 col-sm-6">
+                                    <label class="form-label fw-medium">Prevalent Stroke</label>
+                                    <select class="form-select" name="prevalentStroke" required>
+                                        <option value="No" {% if form_data.get('prevalentStroke') == 'No' %}selected{% endif %}>No</option>
+                                        <option value="Yes" {% if form_data.get('prevalentStroke') == 'Yes' %}selected{% endif %}>Yes</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3 col-sm-6">
+                                    <label class="form-label fw-medium">Hypertension</label>
+                                    <select class="form-select" name="prevalentHyp" required>
+                                        <option value="No" {% if form_data.get('prevalentHyp') == 'No' %}selected{% endif %}>No</option>
+                                        <option value="Yes" {% if form_data.get('prevalentHyp') == 'Yes' %}selected{% endif %}>Yes</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3 col-sm-6">
+                                    <label class="form-label fw-medium">Diabetes</label>
+                                    <select class="form-select" name="diabetes" required>
+                                        <option value="No" {% if form_data.get('diabetes') == 'No' %}selected{% endif %}>No</option>
+                                        <option value="Yes" {% if form_data.get('diabetes') == 'Yes' %}selected{% endif %}>Yes</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <h5 class="section-title text-primary mb-3 pb-2 mt-4">
+                                <i class="bi bi-clipboard2-pulse me-2"></i>Current Health Metrics
+                            </h5>
+                            <div class="row g-4 mb-5">
+                                <div class="col-md-4 col-sm-6">
+                                    <label class="form-label fw-medium">Total Cholesterol</label>
+                                    <div class="input-group">
+                                        <input type="number" step="0.1" min="0" class="form-control" name="totChol" value="{{ form_data.get('totChol', '') }}" required placeholder="e.g. 200">
+                                        <span class="input-group-text bg-light text-muted">mg/dL</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-4 col-sm-6">
+                                    <label class="form-label fw-medium">Systolic BP</label>
+                                    <div class="input-group">
+                                        <input type="number" step="0.1" min="0" class="form-control" name="sysBP" value="{{ form_data.get('sysBP', '') }}" required placeholder="e.g. 120">
+                                        <span class="input-group-text bg-light text-muted">mmHg</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-4 col-sm-6">
+                                    <label class="form-label fw-medium">Diastolic BP</label>
+                                    <div class="input-group">
+                                        <input type="number" step="0.1" min="0" class="form-control" name="diaBP" value="{{ form_data.get('diaBP', '') }}" required placeholder="e.g. 80">
+                                        <span class="input-group-text bg-light text-muted">mmHg</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-4 col-sm-6">
+                                    <label class="form-label fw-medium">BMI</label>
+                                    <input type="number" step="0.1" min="0" class="form-control" name="BMI" value="{{ form_data.get('BMI', '') }}" required placeholder="e.g. 25.4">
+                                </div>
+                                <div class="col-md-4 col-sm-6">
+                                    <label class="form-label fw-medium">Heart Rate</label>
+                                    <div class="input-group">
+                                        <input type="number" step="0.1" min="0" class="form-control" name="heartRate" value="{{ form_data.get('heartRate', '') }}" required placeholder="e.g. 75">
+                                        <span class="input-group-text bg-light text-muted">bpm</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-4 col-sm-6">
+                                    <label class="form-label fw-medium">Glucose Score</label>
+                                    <div class="input-group">
+                                        <input type="number" step="0.1" min="0" class="form-control" name="glucose" value="{{ form_data.get('glucose', '') }}" required placeholder="e.g. 85">
+                                        <span class="input-group-text bg-light text-muted">mg/dL</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="d-grid gap-3 col-md-8 mx-auto mt-2 mb-2">
+                                <button type="submit" class="btn btn-primary btn-lg rounded-pill shadow-sm predict-btn text-white fw-bold">
+                                    <i class="bi bi-cpu-fill me-2"></i> Analyze Risk Using Machine Learning
+                                </button>
+                                <a href="/" class="text-center text-muted text-decoration-none reset-link">
+                                    <i class="bi bi-arrow-counterclockwise"></i> Clear Form Data
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="text-center py-4 mt-auto text-muted bg-white border-top">
+        <div class="container">
+            <p class="mb-0 small">&copy; <script>document.write(new Date().getFullYear())</script> Developed for Predictive Healthcare Analytics.</p>
+            <p class="mb-0 small text-black-50 opacity-75">Powered by Scikit-Learn and Flask</p>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function toggleCigarettes() {
+            const smoker = document.getElementById('smokerSelect').value;
+            const cigsInput = document.getElementById('cigsInput');
+            if (smoker === 'No') {
+                cigsInput.value = '0';
+                cigsInput.readOnly = true;
+                cigsInput.style.backgroundColor = '#e9ecef';
+            } else {
+                cigsInput.readOnly = false;
+                cigsInput.style.backgroundColor = '#fff';
+                if (cigsInput.value === '0') cigsInput.value = '';
+            }
+        }
+        
+        // Auto-scroll to results if they exist
+        window.addEventListener('load', function() {
+            toggleCigarettes();
+            const resultAlert = document.querySelector('.result-alert');
+            const errorAlert = document.querySelector('.alert-danger');
+            
+            if (resultAlert) {
+                resultAlert.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            } else if (errorAlert) {
+                errorAlert.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        });
+    </script>
+</body>
+</html>
