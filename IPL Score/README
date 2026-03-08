@@ -1,0 +1,58 @@
+# 🏏 IPL First Innings Score Predictor
+
+## 📌 Project Overview
+This machine learning project predicts the final first-innings score of an Indian Premier League (IPL) match based on the current match situation. By analyzing historical ball-by-ball data, the model estimates the final total using current runs, wickets fallen, overs bowled, and the scoring rate in the last 5 overs.
+
+## 📊 Dataset
+The dataset (`ipl.csv`) contains ball-by-ball data of IPL matches from Season 1 (2008) to Season 10 (2017). 
+* **Initial Size:** 76,014 rows and 15 columns.
+* **Features used for prediction:** `bat_team`, `bowl_team`, `overs`, `runs`, `wickets`, `runs_last_5`, `wickets_last_5`.
+
+## ⚙️ Workflow & Architecture
+
+### 1. Data Cleaning
+* Removed unwanted columns (`mid`, `venue`, `batsman`, `bowler`, `striker`, `non-striker`).
+* Filtered the data to keep only the **8 consistent teams** currently playing in the tournament.
+* Removed the first 5 overs of every match, as a minimum of 5 overs of data is required to calculate the `runs_last_5` and `wickets_last_5` features accurately.
+
+### 2. Data Preprocessing
+* Applied **One-Hot Encoding** to convert categorical team names into numerical features.
+* Split the dataset chronologically:
+  * **Training Set:** Matches from 2008 to 2016.
+  * **Testing Set:** Matches from 2017 onwards.
+
+### 3. Model Building & Evaluation
+I experimented with multiple regression algorithms. **Linear Regression** performed the best and was selected as the final model.
+
+| Algorithm | Mean Absolute Error (MAE) | Root Mean Squared Error (RMSE) |
+|---|---|---|
+| **Linear Regression** | **11.69** | **15.17** |
+| Random Forest | 13.65 | 18.28 |
+| Decision Tree | 17.02 | 23.13 |
+
+*(Note: Applying AdaBoost to the Linear Regression model yielded an MAE of 11.67, which was not a significant enough improvement to justify the added complexity, so standard Linear Regression was used).*
+
+## 💻 Technologies Used
+* **Python 3**
+* **Pandas & NumPy** (Data manipulation)
+* **Matplotlib & Seaborn** (Data visualization & correlation heatmaps)
+* **Scikit-Learn** (Machine Learning modeling and evaluation)
+
+## 🚀 How to Use the Prediction Function
+
+The project includes a custom `predict_score()` function. You can pass the current match state to get a predicted final score range (Prediction - 10 to Prediction + 5).
+
+```python
+# Example Usage:
+final_score = predict_score(
+    batting_team='Kolkata Knight Riders', 
+    bowling_team='Delhi Daredevils', 
+    overs=9.2, 
+    runs=79, 
+    wickets=2, 
+    runs_in_prev_5=60, 
+    wickets_in_prev_5=1
+)
+
+print("The final predicted score (range): {} to {}".format(final_score-10, final_score+5))
+# Output: The final predicted score (range): 160 to 175
